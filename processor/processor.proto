@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package processer;
+
+
+service Processor {
+    rpc RequestNotification (NotificationRequest) returns (stream Notification);
+    rpc RegisterProcess (Process) returns (RegisteredMessage);
+}
+
+message NotificationRequest{}
+message Notification{
+    string message = 1;
+}
+
+message Process{}
+message RegisteredMessage{}

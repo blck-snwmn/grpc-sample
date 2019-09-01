@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log"
 
 	pb "github.com/blck-snwmn/grpc-sample/processor"
@@ -20,20 +19,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	ctx := context.Background()
+
 	client := pb.NewProcessorClient(conn)
-	stream, err := client.RequestNotification(context.Background(), &pb.NotificationRequest{})
-	if err != nil {
-		log.Fatalf("RequestNotification failed: %v", err)
-	}
-	for {
-		notif, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("%v.RequestNotification(_) = _, %v", client, err)
-		}
-		log.Printf("recieved: %v\n", notif)
-	}
+
+	client.RegisterProcess(ctx, &pb.Process{})
 	log.Println("end")
 }
