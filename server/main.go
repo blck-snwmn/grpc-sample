@@ -33,12 +33,6 @@ func (sv *server) RegisterProcess(ctx context.Context, p *pb.Process) (*pb.Regis
 
 	log.Println("register")
 
-	// rand.Seed(time.Now().UnixNano())
-	// n := rand.Intn(10)
-	// time.Sleep(time.Duration(n) * time.Second)
-	// message := fmt.Sprintf("hello:%d", n)
-	// log.Println("register:" + message)
-	// sv.recieved <- message
 	sv.recieved <- "message"
 
 	return &pb.RegisteredMessage{}, nil
