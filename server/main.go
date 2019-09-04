@@ -75,6 +75,10 @@ func (sv *server) RegisterProcess(ctx context.Context, p *pb.Process) (*pb.Regis
 	return &pb.RegisteredMessage{}, nil
 }
 
+func (sv *server) RegisterStreamProcess(stream pb.Processor_RegisterStreamProcessServer) error {
+	return nil
+}
+
 func main() {
 	sv := server{
 		recieved:      make(chan string, 9),
