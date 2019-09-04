@@ -166,18 +166,20 @@ func init() {
 func init() { proto.RegisterFile("processor.proto", fileDescriptor_6783724e039e1aa6) }
 
 var fileDescriptor_6783724e039e1aa6 = []byte{
-	// 176 bytes of a gzipped FileDescriptorProto
+	// 195 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2f, 0x28, 0xca, 0x4f,
 	0x4e, 0x2d, 0x2e, 0xce, 0x2f, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x84, 0x0a, 0xa4,
 	0x16, 0x29, 0x89, 0x72, 0x09, 0xfb, 0xe5, 0x97, 0x64, 0xa6, 0x65, 0x26, 0x27, 0x96, 0x64, 0xe6,
 	0xe7, 0x05, 0xa5, 0x16, 0x96, 0xa6, 0x16, 0x97, 0x28, 0x69, 0x70, 0xf1, 0x20, 0x0b, 0x0b, 0x49,
 	0x70, 0xb1, 0xe7, 0xa6, 0x16, 0x17, 0x27, 0xa6, 0xa7, 0x4a, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x06,
 	0xc1, 0xb8, 0x4a, 0x9c, 0x5c, 0xec, 0x01, 0x10, 0xd3, 0x94, 0x84, 0xb9, 0x04, 0x83, 0x52, 0xd3,
-	0x33, 0x8b, 0x4b, 0x52, 0x8b, 0x52, 0x53, 0x7c, 0x21, 0xf2, 0x46, 0x8b, 0x18, 0xb9, 0x38, 0x03,
+	0x33, 0x8b, 0x4b, 0x52, 0x8b, 0x52, 0x53, 0x7c, 0x21, 0xf2, 0x46, 0x1f, 0x19, 0xb9, 0x38, 0x03,
 	0x60, 0xf6, 0x0b, 0x05, 0x70, 0x09, 0x43, 0xad, 0x40, 0x31, 0x5e, 0x4e, 0x0f, 0xee, 0x22, 0x3d,
 	0x2c, 0xce, 0x91, 0x12, 0xc7, 0x21, 0x6f, 0xc0, 0x28, 0xe4, 0xcc, 0xc5, 0x0f, 0xb3, 0x14, 0x6a,
-	0x8d, 0x90, 0x10, 0x92, 0x6a, 0xa8, 0x98, 0x94, 0x0c, 0x92, 0x18, 0x86, 0x23, 0x93, 0xd8, 0xc0,
-	0xe1, 0x62, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0xa1, 0xbd, 0x79, 0x9b, 0x2a, 0x01, 0x00, 0x00,
+	0x8d, 0x90, 0x10, 0x92, 0x6a, 0xa8, 0x98, 0x94, 0x0c, 0x92, 0x18, 0x86, 0x23, 0x85, 0x7c, 0xb9,
+	0x44, 0x61, 0x82, 0xc1, 0x25, 0x45, 0xa9, 0x89, 0xb9, 0x64, 0x1b, 0xa5, 0xc1, 0x68, 0xc0, 0x98,
+	0xc4, 0x06, 0x0e, 0x66, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x93, 0x42, 0xda, 0x73, 0x79,
+	0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -194,6 +196,7 @@ const _ = grpc.SupportPackageIsVersion4
 type ProcessorClient interface {
 	RequestNotification(ctx context.Context, in *NotificationRequest, opts ...grpc.CallOption) (Processor_RequestNotificationClient, error)
 	RegisterProcess(ctx context.Context, in *Process, opts ...grpc.CallOption) (*RegisteredMessage, error)
+	RegisterStreamProcess(ctx context.Context, opts ...grpc.CallOption) (Processor_RegisterStreamProcessClient, error)
 }
 
 type processorClient struct {
@@ -245,10 +248,42 @@ func (c *processorClient) RegisterProcess(ctx context.Context, in *Process, opts
 	return out, nil
 }
 
+func (c *processorClient) RegisterStreamProcess(ctx context.Context, opts ...grpc.CallOption) (Processor_RegisterStreamProcessClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Processor_serviceDesc.Streams[1], "/processer.Processor/RegisterStreamProcess", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &processorRegisterStreamProcessClient{stream}
+	return x, nil
+}
+
+type Processor_RegisterStreamProcessClient interface {
+	Send(*Process) error
+	Recv() (*RegisteredMessage, error)
+	grpc.ClientStream
+}
+
+type processorRegisterStreamProcessClient struct {
+	grpc.ClientStream
+}
+
+func (x *processorRegisterStreamProcessClient) Send(m *Process) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *processorRegisterStreamProcessClient) Recv() (*RegisteredMessage, error) {
+	m := new(RegisteredMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ProcessorServer is the server API for Processor service.
 type ProcessorServer interface {
 	RequestNotification(*NotificationRequest, Processor_RequestNotificationServer) error
 	RegisterProcess(context.Context, *Process) (*RegisteredMessage, error)
+	RegisterStreamProcess(Processor_RegisterStreamProcessServer) error
 }
 
 // UnimplementedProcessorServer can be embedded to have forward compatible implementations.
@@ -260,6 +295,9 @@ func (*UnimplementedProcessorServer) RequestNotification(req *NotificationReques
 }
 func (*UnimplementedProcessorServer) RegisterProcess(ctx context.Context, req *Process) (*RegisteredMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterProcess not implemented")
+}
+func (*UnimplementedProcessorServer) RegisterStreamProcess(srv Processor_RegisterStreamProcessServer) error {
+	return status.Errorf(codes.Unimplemented, "method RegisterStreamProcess not implemented")
 }
 
 func RegisterProcessorServer(s *grpc.Server, srv ProcessorServer) {
@@ -305,6 +343,32 @@ func _Processor_RegisterProcess_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Processor_RegisterStreamProcess_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ProcessorServer).RegisterStreamProcess(&processorRegisterStreamProcessServer{stream})
+}
+
+type Processor_RegisterStreamProcessServer interface {
+	Send(*RegisteredMessage) error
+	Recv() (*Process, error)
+	grpc.ServerStream
+}
+
+type processorRegisterStreamProcessServer struct {
+	grpc.ServerStream
+}
+
+func (x *processorRegisterStreamProcessServer) Send(m *RegisteredMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *processorRegisterStreamProcessServer) Recv() (*Process, error) {
+	m := new(Process)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 var _Processor_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "processer.Processor",
 	HandlerType: (*ProcessorServer)(nil),
@@ -319,6 +383,12 @@ var _Processor_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "RequestNotification",
 			Handler:       _Processor_RequestNotification_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "RegisterStreamProcess",
+			Handler:       _Processor_RegisterStreamProcess_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "processor.proto",

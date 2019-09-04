@@ -6,6 +6,7 @@ package processer;
 service Processor {
     rpc RequestNotification (NotificationRequest) returns (stream Notification);
     rpc RegisterProcess (Process) returns (RegisteredMessage);
+    rpc RegisterStreamProcess (stream Process) returns (stream RegisteredMessage);
 }
 
 message NotificationRequest{}
