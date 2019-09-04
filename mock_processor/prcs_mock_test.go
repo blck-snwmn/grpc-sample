@@ -75,3 +75,34 @@ func testRequestNotification(t *testing.T, client pb.ProcessorClient) {
 		}
 	}
 }
+
+func TestRegisterStreamProcess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	stream := prcs.NewMockProcessor_RegisterStreamProcessClient(ctrl)
+	stream.EXPECT().Send(gomock.Any()).Return(nil)
+	stream.EXPECT().Recv().Return(&pb.RegisteredMessage{}, nil)
+
+	client := prcs.NewMockProcessorClient(ctrl)
+	client.EXPECT().RegisterStreamProcess(
+		gomock.Any(),
+	).Return(stream, nil)
+	testRegisterStreamProcess(t, client)
+}
+
+func testRegisterStreamProcess(t *testing.T, client pb.ProcessorClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	stream, err := client.RegisterStreamProcess(ctx)
+	if err != nil {
+		t.Errorf("failed err=%v", err)
+	}
+	if err = stream.Send(&pb.Process{}); err != nil {
+		t.Errorf("failed to Send. err=%v", err)
+	}
+	_, err = stream.Recv()
+	if err != nil {
+		t.Errorf("failed to Recv. err=%v", err)
+	}
+}
