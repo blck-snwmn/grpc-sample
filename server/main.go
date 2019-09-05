@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -76,6 +77,25 @@ func (sv *server) RegisterProcess(ctx context.Context, p *pb.Process) (*pb.Regis
 }
 
 func (sv *server) RegisterStreamProcess(stream pb.Processor_RegisterStreamProcessServer) error {
+	for {
+		_, err := stream.Recv()
+		if err == io.EOF {
+			log.Println("RegisterStreamProcess recieve EOF")
+			//とりあえず
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		// とりあえず気にせず投げる
+		sv.recieved <- "message"
+		err = stream.Send(&pb.RegisteredMessage{})
+		if err != nil {
+			return err
+		}
+	}
+	log.Println("RegisterStreamProcess end")
 	return nil
 }
 
