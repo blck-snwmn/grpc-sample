@@ -6,11 +6,12 @@ package mock_processor
 
 import (
 	context "context"
+	reflect "reflect"
+
 	processor "github.com/blck-snwmn/grpc-sample/processor"
 	gomock "github.com/golang/mock/gomock"
 	grpc "google.golang.org/grpc"
 	metadata "google.golang.org/grpc/metadata"
-	reflect "reflect"
 )
 
 // MockProcessorClient is a mock of ProcessorClient interface
