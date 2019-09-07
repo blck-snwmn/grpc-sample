@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package processer;
 
+import "google/protobuf/timestamp.proto";
 
 service Processor {
     rpc RequestNotification (NotificationRequest) returns (stream Notification);
@@ -15,4 +16,6 @@ message Notification{
 }
 
 message Process{}
-message RegisteredMessage{}
+message RegisteredMessage{
+    google.protobuf.Timestamp recievedAt = 1;
+}
