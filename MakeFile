@@ -1,0 +1,8 @@
+prt:
+	protoc -I processor/ processor/processor.proto --go_out=plugins=grpc:processor
+mkgn:
+	mockgen github.com/blck-snwmn/grpc-sample/processor \
+	ProcessorClient,\
+	Processor_RequestNotificationClient,\
+	Processor_RegisterStreamProcessClient \
+	> mock_processor/prcs_mock.go
