@@ -8,7 +8,10 @@ import (
 	prcs "github.com/blck-snwmn/grpc-sample/mock_processor"
 	pb "github.com/blck-snwmn/grpc-sample/processor"
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/ptypes"
 )
+
+var expectedRM = &pb.RegisteredMessage{}
 
 func TestRegisterProcess(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -18,10 +21,13 @@ func TestRegisterProcess(t *testing.T) {
 
 	process := &pb.Process{}
 
+	time, _ := ptypes.TimestampProto(time.Now())
+	expectedRM.RecievedAt = time
+
 	client.EXPECT().RegisterProcess(
 		gomock.Any(),
 		process,
-	).Return(&pb.RegisteredMessage{}, nil)
+	).Return(expectedRM, nil)
 
 	testRegisterProcess(t, client)
 }
@@ -29,9 +35,12 @@ func TestRegisterProcess(t *testing.T) {
 func testRegisterProcess(t *testing.T, client pb.ProcessorClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	_, err := client.RegisterProcess(ctx, &pb.Process{})
+	resp, err := client.RegisterProcess(ctx, &pb.Process{})
 	if err != nil {
 		t.Errorf("mocking failed")
+	}
+	if resp.RecievedAt != expectedRM.RecievedAt {
+		t.Errorf("RecievedAt doesn't equal response.RecievedAt")
 	}
 }
 
