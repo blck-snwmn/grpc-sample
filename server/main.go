@@ -115,6 +115,7 @@ func main() {
 	}
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(doNothingIntercepter()),
+		grpc.StreamInterceptor(doNothingStreamIntercepter()),
 	)
 	pb.RegisterProcessorServer(s, &sv)
 	if err := s.Serve(lis); err != nil {
