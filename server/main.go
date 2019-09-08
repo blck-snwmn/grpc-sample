@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	pb "github.com/blck-snwmn/grpc-sample/processor"
+	"github.com/golang/protobuf/ptypes"
 
 	"google.golang.org/grpc"
 )
@@ -72,8 +73,9 @@ func (sv *server) RegisterProcess(ctx context.Context, p *pb.Process) (*pb.Regis
 	log.Println("register")
 
 	sv.recieved <- "message"
-
-	return &pb.RegisteredMessage{}, nil
+	return &pb.RegisteredMessage{
+		RecievedAt: ptypes.TimestampNow(),
+	}, nil
 }
 
 func (sv *server) RegisterStreamProcess(stream pb.Processor_RegisterStreamProcessServer) error {
@@ -90,7 +92,9 @@ func (sv *server) RegisterStreamProcess(stream pb.Processor_RegisterStreamProces
 
 		// とりあえず気にせず投げる
 		sv.recieved <- "message"
-		err = stream.Send(&pb.RegisteredMessage{})
+		err = stream.Send(&pb.RegisteredMessage{
+			RecievedAt: ptypes.TimestampNow(),
+		})
 		if err != nil {
 			return err
 		}
