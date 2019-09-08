@@ -7,6 +7,10 @@ import (
 	"net"
 	"sync"
 
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+
 	pb "github.com/blck-snwmn/grpc-sample/processor"
 	"github.com/golang/protobuf/ptypes"
 
@@ -113,8 +117,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
 	s := grpc.NewServer(
-		grpc.UnaryInterceptor(doNothingIntercepter()),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			doNothingIntercepter(),
+			grpc_auth.UnaryServerInterceptor(authenticateFunc),
+		)),
 		grpc.StreamInterceptor(doNothingStreamIntercepter()),
 	)
 	pb.RegisterProcessorServer(s, &sv)

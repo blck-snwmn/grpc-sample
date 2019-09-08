@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"google.golang.org/grpc/metadata"
+
 	"github.com/golang/protobuf/ptypes"
 
 	pb "github.com/blck-snwmn/grpc-sample/processor"
@@ -20,13 +22,15 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-
-	ctx := context.Background()
+	header := metadata.Pairs("authorization", "bearer p@ssword")
+	ctx := metadata.NewOutgoingContext(context.Background(), header)
 
 	client := pb.NewProcessorClient(conn)
 
-	client.RegisterProcess(ctx, &pb.Process{})
-
+	_, err = client.RegisterProcess(ctx, &pb.Process{})
+	if err != nil {
+		log.Fatalf("failed to do RegisterProcess: %v", err)
+	}
 	stream, err := client.RegisterStreamProcess(ctx)
 	if err != nil {
 		log.Fatalf("failed to do RegisterStreamProcess: %v", err)
