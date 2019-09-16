@@ -21,6 +21,9 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewProcessorClient(conn)
+
+	// use RequestNotification
+	// server streaming RPC
 	stream, err := client.RequestNotification(context.Background(), &pb.NotificationRequest{})
 	if err != nil {
 		log.Fatalf("RequestNotification failed: %v", err)

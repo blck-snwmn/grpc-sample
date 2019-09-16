@@ -22,15 +22,23 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
+
+	// use go-grpc-middleware/auth
+	// auth middleware's token
 	header := metadata.Pairs("authorization", "bearer p@ssword")
 	ctx := metadata.NewOutgoingContext(context.Background(), header)
 
 	client := pb.NewProcessorClient(conn)
 
+	// use RegisterProcess
+	// unary RPC for client
 	_, err = client.RegisterProcess(ctx, &pb.Process{})
 	if err != nil {
 		log.Fatalf("failed to do RegisterProcess: %v", err)
 	}
+
+	// use RegisterStreamProcess
+	// bidirectional streaming RPC
 	stream, err := client.RegisterStreamProcess(ctx)
 	if err != nil {
 		log.Fatalf("failed to do RegisterStreamProcess: %v", err)
