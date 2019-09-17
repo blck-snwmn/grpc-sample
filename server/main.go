@@ -24,7 +24,7 @@ const (
 type server struct {
 	recieved      chan string
 	mu            sync.Mutex
-	notifications map[chan string]bool
+	notifications map[chan<- string]bool
 }
 
 func (sv *server) AddChan(ch chan string) {
@@ -42,7 +42,8 @@ func (sv *server) RemoveChan(ch chan string) {
 	close(ch)
 }
 
-func (sv *server) Notify() {
+func (sv *server) Notify(ctx context.Context) {
+end:
 	for {
 		select {
 		case s := <-sv.recieved:
@@ -53,8 +54,11 @@ func (sv *server) Notify() {
 					ch <- s
 				}
 			}()
+		case <-ctx.Done():
+			break end
 		}
 	}
+	log.Println("Notify end")
 }
 
 func (sv *server) RequestNotification(notif *pb.NotificationRequest, stream pb.Processor_RequestNotificationServer) error {
@@ -108,11 +112,16 @@ func (sv *server) RegisterStreamProcess(stream pb.Processor_RegisterStreamProces
 }
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	sv := server{
 		recieved:      make(chan string, 9),
-		notifications: make(map[chan string]bool),
+		notifications: make(map[chan<- string]bool),
 	}
-	go sv.Notify()
+
+	go sv.Notify(ctx)
+
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
